@@ -1,6 +1,6 @@
 from aiogram import types
 
-from data.locations import Centers
+from data.locations import BookShops
 
 
 # function for calc distance between two locations (lat1, lon1) and (lat2, lon2)
@@ -34,7 +34,7 @@ def show_gmaps(lat, lon):
 
 async def choose_nearest_location(location: types.Location):
     distances = []
-    for center_name, center_location in Centers:
+    for center_name, center_location in BookShops:
         distances.append(
             (center_name,
              await calc_distance(location.latitude, location.longitude, center_location['lat'], center_location['lon']),
@@ -42,8 +42,8 @@ async def choose_nearest_location(location: types.Location):
              center_location)
         )
     distances.sort(key=lambda x: x[1])  # filliallarni masofalar bo'yicha tartiblash
-    result = f"Sizga eng yaqin fillialimiz: \n\n{distances[0][0]}\nMasofa: {distances[0][1]} km\nGoogle Maps: {distances[0][2]}"
-    result += f"\n\n\nBoshqa filliallar:\n\n"
+    result = f"Sizga eng yaqin Kitob do'koni: \n\n{distances[0][0]}\nMasofa: {distances[0][1]} km\nGoogle Maps: {distances[0][2]}"
+    result += f"\n\n\nBoshqa do'konlar:\n\n"
     for center in distances[1:]:
         result += f"{center[0]}\nMasofa: {center[1]} km\nGoogle Maps: {center[2]}\n\n"  # filliallarni qolganini chiqarish, nechta bo'lsa ham for orqali chiqaradi
 

@@ -1,6 +1,7 @@
 from aiogram import types
 
-from keyboards.default.start import manzil, start_keyboards
+from keyboards.default.location_kb import manzil
+from keyboards.default.start_kb import start_keyboards
 from loader import dp
 from utils.get_location import choose_nearest_location
 

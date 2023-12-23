@@ -2,6 +2,7 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMar
 
 start_keyboards = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[
     [KeyboardButton('📚 Kitoblarimiz')],
+    [KeyboardButton('🔖 Mening kutubxonam')],
     [KeyboardButton('📌 Manzillarimiz')],
     [KeyboardButton('✍️ Admin'), KeyboardButton('⚙️ Sozlamalar')]
 ])
