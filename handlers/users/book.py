@@ -1,4 +1,5 @@
 from aiogram import types
+from aiogram.types import ReplyKeyboardRemove
 
 from data.book_data import book_details
 from data.config import ADMINS
@@ -27,7 +28,6 @@ async def it_books(message: types.Message):
 async def books_callback(call: types.CallbackQuery):
     call_data = call.data
     book_info = book_details.get(call_data)
-
     if book_info is not None:
         photo = book_info.get('photo')
         caption = book_info.get('caption')
@@ -40,7 +40,8 @@ async def books_callback(call: types.CallbackQuery):
         for admin in ADMINS:
             await bot.send_message(chat_id=admin,
                                    text=f"Foydalanuvchi {call.from_user.full_name} - {call.from_user.id}\n"
-                                        f"{product_name} kitob uchun buyurtma qoldirdi!")
+                                        f"{product_name} kitob uchun buyurtma qoldirdi!"
+                                        f"Kitob narxi: {product_price_without_currency} so'm\n",)
         await call.message.answer(
             f"{product_name} kitob uchun buyurtma qabul qilindi! Tez orada siz bilan bog'lanamiz!\n"
             f"Kitob narxi: {product_price_without_currency} so'm\n",
@@ -48,8 +49,6 @@ async def books_callback(call: types.CallbackQuery):
 
         await call.message.delete()
 
-    elif call_data == 'back_to_categories':
-        await call.message.edit_text('Kategoriyalardan birini tanlang:', reply_markup=book_categories)
-
-    elif call_data == 'back_to_books':
-        await call.message.answer_photo(photo=photo, caption=caption, reply_markup=buyurtma)
+    elif call_data == 'back_to_categories' or call_data == 'back_to_books':
+        await call.message.delete()
+        await call.message.answer('Kategoriyalardan birini tanlang:', reply_markup=book_categories)
