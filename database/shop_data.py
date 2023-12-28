@@ -14,6 +14,12 @@ def create_users_table():
     return True
 
 
+def get_users():
+    cursor.execute(f"SELECT * FROM users;")
+    result = cursor.fetchall()
+    return result
+
+
 def add_user(user_id, name: str):
     cursor.execute(f"INSERT INTO users("
                    f"user_id, name) "
@@ -39,13 +45,27 @@ def create_category_table():
     return True
 
 
+def add_category(name: str):
+    cursor.execute(f"INSERT INTO category("
+                   f"name) "
+                   f"VALUES('{name}');")
+    connection.commit()
+    return True
+
+
+def get_categories():
+    cursor.execute(f"SELECT * FROM category;")
+    result = cursor.fetchall()
+    return result
+
+
 def create_books_table():
     cursor.execute('CREATE TABLE IF NOT EXISTS books('
                    'id INTEGER PRIMARY KEY, '
                    'name VARCHAR(50),'
                    'price INTEGER,'
                    'photo VARCHAR(255),'
-                   'author VARCHAR(50)),'
+                   'author VARCHAR(50),'
                    'category_id INTEGER,'
                    'FOREIGN KEY (category_id) REFERENCES category(id));')
     connection.commit()
@@ -96,3 +116,8 @@ def get_orders(user_id):
     result = cursor.fetchall()
     return result
 
+
+def get_all_orders():
+    cursor.execute(f"SELECT * FROM orders;")
+    result = cursor.fetchall()
+    return result

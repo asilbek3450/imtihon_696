@@ -1,53 +1,56 @@
 from aiogram import types
 from aiogram.types import ReplyKeyboardRemove
 
-from data.book_data import book_details
 from data.config import ADMINS
+from database.shop_data import get_book, add_order, create_orders_table
 from keyboards.default.books_kb import book_categories
-from keyboards.default.start_kb import start_keyboards
-from keyboards.inline.book_inlines import ertaklar, darsliklar, it_kitoblar, buyurtma
+from keyboards.inline.book_inlines import get_books_keyboards, buyurtma
 from loader import dp, bot
 
-
-@dp.message_handler(text='📚 Ertaklar')
-async def ertak_books(message: types.Message):
-    await message.answer(f"{message.text} kategoriyasidagi kitoblardan birini tanlang:", reply_markup=ertaklar)
+category_id = None
 
 
-@dp.message_handler(text='📚 Darsliklar')
-async def darslik_books(message: types.Message):
-    await message.answer(f"{message.text} kategoriyasidagi kitoblardan birini tanlang:", reply_markup=darsliklar)
+@dp.message_handler(text='📚 Kitoblarimiz')
+async def all_books(message: types.Message):
+    await message.answer('Kategoriyalardan birini tanlang:', reply_markup=book_categories)
 
 
-@dp.message_handler(text='📚 IT ga oid kitoblar')
-async def it_books(message: types.Message):
-    await message.answer(f"{message.text} kategoriyasidagi kitoblardan birini tanlang:", reply_markup=it_kitoblar)
+@dp.message_handler(text_startswith='📚')
+async def books(message: types.Message):
+    global category_id
+    category_id = int(message.text.split('.')[0].split(' ')[1])
+    await message.answer(f'{message.text} kategoriyasidagi kitoblar:', reply_markup=get_books_keyboards(category_id))
 
 
 @dp.callback_query_handler()
 async def books_callback(call: types.CallbackQuery):
     call_data = call.data
-    book_info = book_details.get(call_data)
-    if book_info is not None:
-        photo = book_info.get('photo')
-        caption = book_info.get('caption')
-        await call.message.answer_photo(photo=photo, caption=caption, reply_markup=buyurtma)
-        await call.message.delete()
+
+    if call_data.startswith('book_'):
+        book_id = int(call_data.split('_')[-1])
+        book = get_book(book_id)
+        await call.message.answer_photo(photo=book[3], caption=f"<b>{book[0]} {book[1]}</b>\n\n"
+                                                               f"Narxi: {book[2]} so'm\n\n"
+                                                               f"Muallif: {book[4]}", reply_markup=buyurtma)
 
     elif call_data == 'buyurtma_berish':
-        product_name = call.message.caption.split('\n')[0]
-        product_price_without_currency = call.message.caption.split('\n')[1].split(' ')[0]
-        for admin in ADMINS:
-            await bot.send_message(chat_id=admin,
-                                   text=f"Foydalanuvchi {call.from_user.full_name} - {call.from_user.id}\n"
-                                        f"{product_name} kitob uchun buyurtma qoldirdi!"
-                                        f"Kitob narxi: {product_price_without_currency} so'm\n",)
-        await call.message.answer(
-            f"{product_name} kitob uchun buyurtma qabul qilindi! Tez orada siz bilan bog'lanamiz!\n"
-            f"Kitob narxi: {product_price_without_currency} so'm\n",
-            reply_markup=start_keyboards)
+        create_orders_table()
 
-        await call.message.delete()
+        book_id = int(call.message.caption.split(' ')[0])
+        book = get_book(book_id)
+
+        user_id = call.message.chat.id
+
+        await call.message.answer(f"Siz {book[1]} kitobini buyurtma berdingiz!, \nNarxi {book[2]} so\'m."
+                                  f"\nAdminlarimiz siz bilan bog\'lanishadi, xaridingiz uchun rahmat!"
+                                  f"\n\nBosh sahifaga qaytish uchun /start ni bosing", reply_markup=ReplyKeyboardRemove())
+        await bot.send_message(chat_id=ADMINS[0], text=f"🛒 Yangi buyurtma:\n"
+                                                       f"Kitob nomi: {book[1]}\n"
+                                                       f"Kitob narxi: {book[2]}\n"
+                                                       f"Kitob muallifi: {book[4]}\n"
+                                                       f"Buyurtmachi: {call.message.chat.full_name}\n"
+                                                       f"Buyurtmachi id: {call.message.chat.id}")
+        add_order(user_id, book_id)
 
     elif call_data == 'back_to_categories' or call_data == 'back_to_books':
         await call.message.delete()

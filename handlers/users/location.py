@@ -1,7 +1,8 @@
 from aiogram import types
 
+from data.config import ADMINS
 from keyboards.default.location_kb import manzil
-from keyboards.default.start_kb import start_keyboards
+from keyboards.default.start_kb import start_keyboards, start_admin_keyboards
 from loader import dp
 from utils.get_location import choose_nearest_location
 
@@ -9,6 +10,11 @@ from utils.get_location import choose_nearest_location
 @dp.message_handler(text='📌 Manzillarimiz')
 async def manzil_keyboard(message: types.Message):
     await message.reply("Joylashgan manzilingizni jo'nating", reply_markup=manzil)
+
+
+@dp.message_handler(text='⬅️ Orqaga', chat_id=ADMINS)
+async def orqaga_keyboard(message: types.Message):
+    await message.reply("Bosh sahifaga qaytdik", reply_markup=start_admin_keyboards)
 
 
 @dp.message_handler(text='⬅️ Orqaga')
